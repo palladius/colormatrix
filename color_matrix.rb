@@ -4,6 +4,16 @@
 
 	Implements all the functions required by the exercise
 
+	The matrix is implemented thru an Array providing the 'human' borders (1..N,1..M) instead
+	of the classical C borders (0..N-1 and so on).
+
+	All algorithms were done by myself, except for the filling algorithm.
+	That was looked for in the internet, but was found quite lacunary. The Rosetta 
+	code had to be adapted a little bit, but is still buggy. probably it comes from the
+	human borders instead of the C classical ones.
+
+	Exercise to be finished, yet the proof of concept is there
+
 =end
 
 #require 'set' # from stdlib
@@ -86,6 +96,7 @@ class ColorMatrix < Array
 
 	def flood_fill(pixel, new_colour)
     current_colour = self[pixel.x, pixel.y]
+    #current_colour = get(pixel.x, pixel.y)
     queue = Queue.new
     queue.enqueue(pixel)
     until queue.empty?
