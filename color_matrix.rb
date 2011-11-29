@@ -33,7 +33,7 @@ class ColorMatrix < Array
   # which is (x-1)+(y-1)*NUM_COLUMNS in streteched array notation
 	# SETS COLOUR
   def set_colour(x,y,color)
-		deb "set(#{x},#{y},'#{color}')"
+		#deb "set(#{x},#{y},'#{color}')"
     self[(x-1) + (y-1) * cols ] = ColorMatrix.smart_color( color )
   end
   
@@ -65,7 +65,7 @@ class ColorMatrix < Array
   
   # 4-connectivity neighbours are: N and W
   # 8-connectivity neihbours are: W, NW, N, NE
-  def half_neighbours_of(x,y)
+  def neighbours_of(x,y)
     neighbours = []
     neighbours << [x-1,y] unless x<2 # west unless boundary
     neighbours << [x,y-1] unless y<2 # north unless boundary
@@ -73,7 +73,7 @@ class ColorMatrix < Array
   end
   
   def neighbours_colors_of(x,y)
-    half_neighbours_of(x,y).map{|el| get(el[0],el[1]) }                    
+    neighbours_of(x,y).map{|el| get(el[0],el[1]) }                    
   end
 
   def west?(x,y)
@@ -89,29 +89,34 @@ class ColorMatrix < Array
 	R is defined as: Pixel (X,Y) belongs to R. 
 	Any other pixel which is the same colour as (X,Y) and shares a common side with any pixel in R also belongs to this region.
 
-	From the filling description looks like a 4-connectivity filling (I did on my thesis!)
+	From the filling description looks like a 4-connectivity filling (I did on my thesis!).
 
-	The solution consistes on Labelling, then filling everything which ahs the same label as the P(x,y)
+	This is known in literature as "Connected component labeling" or "4/8-connectivity labelling".
+
+	The solution consistes on Labelling, then filling everything which has the same label as the P(x,y)
 
 	Pass 1:
-		Create a matrix of boolean initialiazed to false. I reuse my matrix with true (1) and false (0)
+		Create a matrix of boolean initialiazed to false (or int to 0). I reuse my matrix with true (1) and false (0)
 =end
   
   
   def twopass(data)
     linked = []
-    labels = ColorMatrix.new(rows,cols,:background)
-    next_label = 0
+    labels = ColorMatrix.new(rows,cols,0)
+    next_label = 1  #  0 is background, we start with 1
     
     # First pass
     (1..rows).each do |x|
       (1..cols).each do |y|
-        deb "P(#{x};#{y}) "
+        #deb "P(#{x};#{y}) "
         if data.get(x,y) != :background
-					neighbour_labels = labels.neighbours_colors_of(x,y)
-					#neighbours = labels.neighbours_of(x,y)
-					if neighbour_labels.size == 0 
-						deb "empty neighbours!"
+					#neighbour_labels = labels.neighbours_colors_of(x,y)
+					#	Neighbours are the elements which are connected with the current elements label
+					neighbours = labels.neighbours_of(x,y).select{|el|  
+						labels.get(el[0],el[1]) == labels.get(x,y)
+					}
+					if neighbours == []
+						#deb "empty neighbours!"
 						linked[next_label] ||= []
 						linked[next_label] << next_label
 						labels.set(x,y,next_label) 
@@ -119,8 +124,8 @@ class ColorMatrix < Array
 					else # not empty
 						# find the smallest label
 						labels.set(x,y,neighbour_labels.min)
-						deb neighbour_labels 
-						deb neighbour_labels.class 
+						#deb neighbour_labels 
+						#deb neighbour_labels.class 
 						for label in neighbour_labels do
 							#deb label
 							#p "union(#{ linked[label]},#{neighbour_labels})"
@@ -130,36 +135,48 @@ class ColorMatrix < Array
 				end
       end
     end
-		labels.print
-		# Second pass todo
-  end
+		
+		# debug print intermedium
+		labels.print "First labelling pass"
 
-  def fill(x,y,color)
-    #set(x,y,color)
-    deb "Original matrix: \n#{self}"
-    f = twopass(self)
-    # First I create a labelling matrix m2
-    m2 = ColorMatrix.new(self.rows,self.cols,:nil)
-    #m2.set(x,y,color)
-    # first pass
-    labeln = 0
+		# Second pass todo
     (1..rows).each do |x|
       (1..cols).each do |y|
-        
-        #deb  "#{x},#{y}"  
-        # does the pixel west have
-      end
-    end
-    deb "Labelling matrix: \n#{m2}"
-    # west
-    neighbours = half_neighbours_of(x,y)
-    puts "neighbours = #{neighbours}"
-    
+        if data[x][y] != 0
+					labels.set(x,y, _find(labels[x][y]) )
+				end
+			end
+		end
+		labels.print "after second pass"
+	
+		return labels
+  end
+
+	def _find(s)
+		#deb "Find TODO: #{s.inspect}"
+		s.to_i
+	end
+
+  def fill(x,y,color)
+    deb "Original matrix: \n#{self}"
+    m2 = twopass(self)
+		label_xy = m2.get(x,y)
+		deb "Label from my point: #{label_xy}"
+    #set(x,y,color)
+    (1..rows).each do |x1|
+      (1..cols).each do |y1|
+				set(x1,y1,color) if m2.get(x1,y1) == label_xy
+			end
+		end
+
+    # First I create a labelling matrix m2
+    #m2 = ColorMatrix.new(self.rows,self.cols,:nil)
+    #deb "Labelling matrix: \n#{m2}"
     
   end
   
-  def print
-    deb "[SEE] This matrix has the following elements:\n"
+  def print(description = "This matrix has the following elements")
+    deb "[PRINT] #{description}\n"
     puts self.to_s
   end
   
@@ -186,6 +203,10 @@ public
     m.new(x,y)
     m
   end
+
+	def self.deb?
+		@@debug
+	end
 
 =begin
  CLASS methods !!!
