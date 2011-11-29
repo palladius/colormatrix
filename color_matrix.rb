@@ -103,7 +103,7 @@ class ColorMatrix < Array
   def twopass(data)
     linked = []
     labels = ColorMatrix.new(rows,cols,0)
-    next_label = 1  #  0 is background, we start with 1
+    next_label = 0  #  0 is background, we start with 1
     
     # First pass
     (1..rows).each do |x|
@@ -123,6 +123,7 @@ class ColorMatrix < Array
 						next_label = next_label + 1       
 					else # not empty
 						# find the smallest label
+						deb "Not empty! P=(#{x},#{y}) Labels => #{neighbours.inspect}"
 						labels.set(x,y,neighbour_labels.min)
 						#deb neighbour_labels 
 						#deb neighbour_labels.class 
@@ -153,7 +154,6 @@ class ColorMatrix < Array
   end
 
 	def _find(s)
-		#deb "Find TODO: #{s.inspect}"
 		s.to_i
 	end
 
