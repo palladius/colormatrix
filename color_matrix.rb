@@ -1,27 +1,41 @@
 =begin
 
-  implements a matrix concept
+  implements a matrix concept, extending ruby core Matrix:
+  
+  http://corelib.rubyonrails.org/classes/Matrix.html
 
 =end
 
-class ColorMatrix #< Hash
-  @@version  = "0.1" 
-  
+require 'matrix' # from stdlib
+
+class ColorMatrix < Matrix
+  @@version  = "0.2" 
   @@colors = {
     :white  => 'O',
   }
+  #attr_accessor :x, :y
   
-  # attr_accessor :name, :domain, :about
-  attr_accessor :x,  :y
+  def initialize(x,y, base_colour = :white )
+    puts "Matrix initialize(#{x},#{y}) with color: #{base_colour}"
+    tmp = ColorMatrix #.new# (x,y)
+    # once for every X
+    first_row = Array.new(y, ColorMatrix.smart_color(base_colour))
+    m = ColorMatrix[ [first_row,first_row] ]
+    p "DEB self.class = #{self.class}"
+    m
+  end
+  alias :I :initialize
   
-  def self.initialize(x,y)
-    #pviola "Initialize: #{@@log_file}" # = "~/svn/carlesso/tmp/backupmagic.log" # TODO implementa log
+  def colour(x,y,color)
+    puts "DEB colour"
+    self[x,y] = smart_color( color )
   end
-    
-  def initialize(x,y)
-
+  alias :L :colour
+  
+  def terminate()
+    'TODO'
   end
-  #alias :I :initialize
+  alias :X :terminate
   
   def validate
     # mockup
@@ -32,19 +46,24 @@ class ColorMatrix #< Hash
     validate rescue false
   end
   
+  def see
+    puts "This matrix has the following elements:\n", self.to_s
+  end
+  alias :S :see
+  
+  def to_s
+    ":TODO"
+  end
+  
   
 =begin
  CLASS methods !!!
 =end 
-  def self.about
-    "This class is useful for backups. To understand its use, try bin/backup.rb and etc/hosts.yml :)"
-  end 
-  
-  #alias :find_all :find
-  
 
-  def to_s(opts={})
-    :TODO
+  # gives the color by string itself or by hash table if its a symbol
+  def self.smart_color(x)
+    return @@colors[x] if x.class == Symbol
+    x
   end
 
-end #/RicBackupResource class
+end #/ColorMatrix class
