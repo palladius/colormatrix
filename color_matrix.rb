@@ -6,7 +6,9 @@
 
 =end
 
-require 'set' # from stdlib
+#require 'set' # from stdlib
+require 'queue'
+require 'pixel'
 
 class ColorMatrix < Array
   @@version  = "0.2" 
@@ -37,7 +39,7 @@ class ColorMatrix < Array
 		#deb "set(#{x},#{y},'#{color}')"
     self[(x-1) + (y-1) * cols ] = ColorMatrix.smart_color( color )
   end
-  
+ 
   # returns element(X,Y) in the array
   def get_colour(x,y)
     self[(x-1) + (y-1) * cols ]
@@ -86,18 +88,18 @@ class ColorMatrix < Array
 
 
 =begin
-	Fill the region R with the colour C. 
-	R is defined as: Pixel (X,Y) belongs to R. 
-	Any other pixel which is the same colour as (X,Y) and shares a common side with any pixel in R also belongs to this region.
+  Fill the region R with the colour C. 
+  R is defined as: Pixel (X,Y) belongs to R. 
+  Any other pixel which is the same colour as (X,Y) and shares a common side with any pixel in R also belongs to this region.
 
-	From the filling description looks like a 4-connectivity filling (I did on my thesis!).
+  From the filling description looks like a 4-connectivity filling (I did on my thesis!).
 
-	This is known in literature as "Connected component labeling" or "4/8-connectivity labelling".
+  This is known in literature as "Connected component labeling" or "4/8-connectivity labelling".
 
-	The solution consistes on Labelling, then filling everything which has the same label as the P(x,y)
+  The solution consistes on Labelling, then filling everything which has the same label as the P(x,y)
 
-	Pass 1:
-		Create a matrix of boolean initialiazed to false (or int to 0). I reuse my matrix with true (1) and false (0).
+  Pass 1:
+  Create a matrix of boolean initialiazed to false (or int to 0). I reuse my matrix with true (1) and false (0).
 		Create a linked_list
 =end
   
@@ -128,15 +130,10 @@ class ColorMatrix < Array
 	    deb "empty neighbours! next_label = #{next_label}"
 	     #deb "Linked[next_label] before = #{linked_list[next_label]}" #  << next_label
 	    linked_list[next_label] ||= []
-	    #assert(linked_list.class == Hash, "LinkedList3 must be an Hash: #{linked_list.inspect}")
-	    #assert(next_label.class == Fixnum, "should be a number")
 	    #linked_list[next_label] << next_label if next_label
 	    #deb "Linked[next_label] after  = #{linked_list[next_label]}" #  << next_label
 	    labels.set(x,y,next_label) 
-	    #assert(linked_list.class == Hash, "LinkedList1 must be an Hash")
-	    #assert(linked_list[next_label].class == Array, "LinkedList[nl] must be an Array: #{linked_list[next_label].inspect}")
 	    #(linked_list[next_label]).uniq! # removes from Hash multuiple elements, like a Set
-	    #assert(linked_list.class == Hash, "LinkedList2 must be an Hash")
 	    next_label = next_label + 1
 	  else # not empty			
 	    # find the smallest label
@@ -172,33 +169,66 @@ class ColorMatrix < Array
     s.to_i
   end
 
-  def fill(x,y,color)
-    deb "fill(x,y,color)"
-		assert(x>=0 && x<cols, "x must be within 0..cols")
-    deb "Original matrix: \n#{self}"
-    m2 = twopass(self) # applies the two-pass algorithm
-    #m2 = onepass(self) # applies the two-pass algorithm
-    label_xy = m2.get(x,y)
+	def draw_line(west,east,color)
+		deb "west--east: #{west} :-: #{east}"
+		# ASSERT West/East.t are equal
+		draw_horizontal(west.x,east.x,west.y,color)
+	end
 
-    deb "Label from my point: #{label_xy}"
-    
-    (1..rows).each do |x1|
-      (1..cols).each do |y1|
-	set(x1,y1,color) if m2.get(x1,y1) == label_xy
+	def flood_fill(pixel, new_colour)
+    current_colour = self[pixel.x, pixel.y]
+    queue = Queue.new
+    queue.enqueue(pixel)
+    until queue.empty?
+      p = queue.dequeue
+      if self[p.x, p.y] == current_colour
+        west = find_border(p, current_colour, :west)
+        east = find_border(p, current_colour, :east)
+        draw_line(west, east, new_colour)
+        q = west
+        while q.x <= east.x
+          [:north, :south].each do |direction|
+            n = neighbour(q, direction)
+            queue.enqueue(n) if self[n.x, n.y] == current_colour
+          end
+          q = neighbour(q, :east)
+        end
       end
     end
+  end
 
-    # First I create a labelling matrix m2
-    #m2 = ColorMatrix.new(self.rows,self.cols,:nil)
-    #deb "Labelling matrix: \n#{m2}"
-    
+	def find_border(pixel, colour, direction)
+    nextp = neighbour(pixel, direction)
+    while self[nextp.x, nextp.y] == colour
+      pixel = nextp
+      nextp = neighbour(pixel, direction)
+    end
+    pixel
+  end
+	 
+  def neighbour(pixel, direction)
+    case direction
+			when :north then Pixel.new(pixel.x, pixel.y - 1)
+			when :south then Pixel.new(pixel.x, pixel.y + 1)
+			when :east  then Pixel.new(pixel.x + 1, pixel.y)
+			when :west  then Pixel.new(pixel.x - 1, pixel.y)
+    end
+  end
+ 
+
+  def fill(x,y,color)
+    deb "fill(#{x},#{y},#{color})"
+		#assert(x>=0 && x<cols, "x must be within 0..cols")
+    deb "Original matrix: \n#{self}"
+		pixel = Pixel.new(x,y)
+		flood_fill(pixel,color)
   end
 
 	# set all pixels to white
   def clear()
     (1..rows).each do |x|
       (1..cols).each do |y|
-	set(x,y,:white)
+				set(x,y,:white)
       end
     end
   end
@@ -250,10 +280,10 @@ private
     x
   end
 
-  def assert(assertion, description)
-    return if assertion
-    puts "ASSERT ERROR: #{description}"
-    exit 1
-  end
+  #def assert(assertion, description)
+  #  return if assertion
+  #  puts "ASSERT ERROR: #{description}"
+  #  exit 1
+  #end
 
 end #/ColorMatrix class

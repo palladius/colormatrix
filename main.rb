@@ -7,8 +7,7 @@
 
 =end
 
-# TODO better inclusion, not tree-dependant :)
-require '~/git/colormatrix/color_matrix.rb'
+require 'color_matrix.rb'
 
 def main
   matrix = ColorMatrix.new(5,6)
