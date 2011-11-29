@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
+# TODO better inclusion, not tree-dependant :)
 require '~/git/colormatrix/color_matrix.rb'
-require '~/git/colormatrix/person.rb'
 
 def main
   puts 'Hello from main'

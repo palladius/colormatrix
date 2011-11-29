@@ -13,17 +13,20 @@ class ColorMatrix < Array
   @@colors = {
     :white  => 'O',
   }
+	@@debug = true
   attr_accessor :cols, :rows
   
   def initialize(x, y, base_colour = :white )
     super(x*y, ColorMatrix.smart_color(base_colour))
     @cols = x
     @rows = y
-    puts "Matrix initialize(#{x},#{y}) with color: #{base_colour}"
-    p "DEB self.class = #{self.class}"
-    #m
+    deb "Matrix initialize(#{x},#{y}) with color: #{base_colour}"
   end
   alias :I :initialize
+
+	def	deb(str)
+		puts "DEB| #{str}" if @@debug
+	end
   
   # P(x,y) in human/math notation corresponds to
   # x-1 for X and y'1 for Y in matrix notation.
@@ -53,7 +56,7 @@ class ColorMatrix < Array
   end
   
   def see
-    #puts "[SEE] This matrix has the following elements:\n"
+    deb "[SEE] This matrix has the following elements:\n"
     puts self.to_s
   end
   alias :S :see
