@@ -67,19 +67,6 @@ class ColorMatrix < Array
     (x1..x2).each{|x| set(x,y,color) }
   end
   
-  # 4-connectivity neighbours are: N and W
-  # 8-connectivity neighbours are: W, NW, N, NE   (diagonal_also)
-  def neighbours_of(x,y, diagonal_also = false)
-    myneighbours = [ ]
-    myneighbours << [x-1,y] unless x<2 # west unless boundary
-    myneighbours << [x,y-1] unless y<2 # north unless boundary
-    if diagonal_also # 8-conntected
-      neighbours << [x+1,y] unless x >= cols # east unless boundary
-      neighbours << [x,y+1] unless y >= rows # south unless boundary
-    end
-    myneighbours
-  end
-  
   def neighbours_colors_of(x,y)
     ret = neighbours_of(x,y).map{|el| get(el[0],el[1]) }                    
 		deb "neighbour_colors_of = #{ret}"
@@ -94,86 +81,10 @@ class ColorMatrix < Array
 
   From the filling description looks like a 4-connectivity filling (I did on my thesis!).
 
-  This is known in literature as "Connected component labeling" or "4/8-connectivity labelling".
+  This is known in literature as "Connected component labeling" or "4/8-connectivity labelling". More simply, in this case, I can achieve that with Flood-Filling
 
-  The solution consistes on Labelling, then filling everything which has the same label as the P(x,y)
-
-  Pass 1:
-  Create a matrix of boolean initialiazed to false (or int to 0). I reuse my matrix with true (1) and false (0).
-		Create a linked_list
 =end
   
-  def twopass(data)
-    linked_list = Hash.new
-    labels = ColorMatrix.new(cols,rows,:background)
-    next_label = 1  #  0 is background, we start with 1
-    deb "twopass data:\n#{data}"
-    
-    # First pass
-    (1..rows).each do |y|
-      (1..cols).each do |x|
-	#deb "LinkedList: #{linked_list.inspect}"
-        if data.get(x,y) != 0
-	  # all neighbours
-	  neighbours = labels.neighbours_of(x,y)
-	  neighbours_filtered = labels.neighbours_of(x,y).select{|el| # el is an array(x,y) 
-	    #deb "EL #{el[0]},#{el[1]} vs #{x},#{y} -- #{el.inspect}"
-	    #labels.get(el[0],el[1]) == labels.get(x,y)
-	    data.get(el[0],el[1]) == data.get(x,y)
-	  }
-	  neighbour_labels = labels.neighbours_colors_of(x,y)
-	  #	Neighbours are the elements which are connected with the current elements label
-	  deb "P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')} Filtered: #{neighbours_filtered}"
-
-	  # If neighbours are empty
-	  if neighbours == []
-	    deb "empty neighbours! next_label = #{next_label}"
-	     #deb "Linked[next_label] before = #{linked_list[next_label]}" #  << next_label
-	    linked_list[next_label] ||= []
-	    #linked_list[next_label] << next_label if next_label
-	    #deb "Linked[next_label] after  = #{linked_list[next_label]}" #  << next_label
-	    labels.set(x,y,next_label) 
-	    #(linked_list[next_label]).uniq! # removes from Hash multuiple elements, like a Set
-	    next_label = next_label + 1
-	  else # not empty			
-	    # find the smallest label
-	    deb "Not empty! P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')}"
-	    labels.set(x,y,neighbour_labels.min)
-	    for label in neighbour_labels do
-	      #linked_list[label] ||= []
-	      # linked_list[label] << neighbour_labels
-	    end
-	  #deb "Linked now is: #{linked_list.inspect}"
-	  end
-	end
-      end
-    end
-		
-    # debug print intermedium
-    labels.print "First labelling pass" if ColorMatrix.deb?
-
-    # Second pass todo
-    (1..rows).each do |y|
-      (1..cols).each do |x|
-        if data[x][y] != 0
-	  labels.set(x,y, _find(labels[x][y]) )
-	end
-      end
-    end
-    labels.print "after second pass" if ColorMatrix.deb?
-
-    return labels
-  end
-
-  def _find(s)
-    s.to_i
-  end
-
-	def draw_line(west,east,color)
-		deb "west--east: #{west} :-: #{east}"
-		# ASSERT West/East.t are equal
-		draw_horizontal(west.x,east.x,west.y,color)
-	end
 
 	def flood_fill(pixel, new_colour)
     current_colour = self[pixel.x, pixel.y]
@@ -215,6 +126,11 @@ class ColorMatrix < Array
     end
   end
  
+	def draw_line(west,east,color)
+		deb "west--east: #{west} :-: #{east}"
+		# ASSERT West/East.t are equal
+		draw_horizontal(west.x,east.x,west.y,color)
+	end
 
   def fill(x,y,color)
     deb "fill(#{x},#{y},#{color})"
