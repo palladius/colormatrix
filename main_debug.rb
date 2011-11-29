@@ -12,15 +12,14 @@ require '~/git/colormatrix/color_matrix.rb'
 
 def main
   puts "\n1. Creating matrix"
+  matrix = ColorMatrix.set_debug(true)
   matrix = ColorMatrix.new(3,4)
   puts "\n2. Colouring:"
   matrix.L( 1,2,'A')
   puts "\n3. Filling:"
   matrix.V(2,1,4,'W') 
-  #matrix.H(3,4,2,'Z')
-  #matrix.V(5,2,4,'S') 
   #matrix.H(3,4,5,'N')
-  matrix.F(3,3,'f')
+  matrix.F(3,3,'f') rescue nil
   #matrix.F(3,4,'i')
   #matrix.F(1,2,'o')
   puts "\n3. Printing"

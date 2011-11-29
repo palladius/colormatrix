@@ -44,7 +44,8 @@ class ColorMatrix < Array
   end
   
   def terminate()
-    'TODO'
+    puts 'only makes sense in interactive mode..'
+		exit 0
   end
   
   def validate
@@ -65,14 +66,15 @@ class ColorMatrix < Array
   end
   
   # 4-connectivity neighbours are: N and W
-  # 8-connectivity neihbours are: W, NW, N, NE
-  def neighbours_of(x,y)
+  # 8-connectivity neighbours are: W, NW, N, NE
+  def neighbours_of(x,y, diagonal_also = false)
     myneighbours = [ ]
     myneighbours << [x-1,y] unless x<2 # west unless boundary
     myneighbours << [x,y-1] unless y<2 # north unless boundary
-    #neighbours << [x+1,y] unless x >= cols # east unless boundary
-    #neighbours << [x,y+1] unless y >= rows # south unless boundary
-		#deb "Neighbours of (#{x1},#{y1}): #{myneighbours.inspect}"
+		if diagonal_also
+			neighbours << [x+1,y] unless x >= cols # east unless boundary
+			neighbours << [x,y+1] unless y >= rows # south unless boundary
+		end
     myneighbours
   end
   
@@ -105,7 +107,6 @@ class ColorMatrix < Array
     # First pass
     (1..rows).each do |y|
       (1..cols).each do |x|
-        #deb "P(#{x};#{y}) "
         if data.get(x,y) != 0
 					neighbours = labels.neighbours_of(x,y)
 					neighbours_filtered = labels.neighbours_of(x,y).select{|el| # el is an array(x,y) 
@@ -136,8 +137,11 @@ class ColorMatrix < Array
 						#deb neighbour_labels.class 
 						for label in neighbour_labels do
 							#deb label
-							deb "union(#{ linked[label]},#{neighbour_labels})"
-							linked[label] = linked[label] | neighbour_labels # union
+							#deb "union(#{ linked[label]},#{neighbour_labels})"
+							linked[label] |= neighbour_labels
+							#neighbour_labels.each do |mylabel| # union
+							#	linked[label] |= mylabels # union
+							#end
 							deb "Linked now is: #{linked.inspect}"
 						end
 					end
@@ -146,7 +150,7 @@ class ColorMatrix < Array
     end
 		
 		# debug print intermedium
-		labels.print "First labelling pass"
+		labels.print "First labelling pass" if ColorMatrix.deb?
 
 		# Second pass todo
     (1..rows).each do |y|
@@ -156,7 +160,7 @@ class ColorMatrix < Array
 				end
 			end
 		end
-		labels.print "after second pass"
+		labels.print "after second pass" if ColorMatrix.deb?
 	
 		return labels
   end
@@ -192,12 +196,12 @@ class ColorMatrix < Array
 	end
   
   def print(description = "This matrix has the following elements")
-    deb "[PRINT] #{description}\n"
+    deb "[PRINT] #{description}:\n"
     puts self.to_s
   end
   
   # Takes array and splits into chunks of X size
-  def to_s() #(opts={})
+  def to_s
     super.to_s.scan(/.{#{cols}}/).join("\n")
   end
   
@@ -213,6 +217,10 @@ class ColorMatrix < Array
   alias :get :get_colour
 
 public
+
+	def self.set_debug(b)
+		@@debug = b
+	end
 
   def self.I(x,y)
     m = ColorMatrix
