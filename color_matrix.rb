@@ -22,7 +22,6 @@ class ColorMatrix < Array
     @rows = y
     deb "Matrix initialize(#{x},#{y}) with color: #{base_colour}"
   end
-  alias :I :initialize
 
 	def	deb(str)
 		puts "DEB| #{str}" if @@debug
@@ -34,7 +33,6 @@ class ColorMatrix < Array
   def colour(x,y,color)
     self[(x-1) + (y-1) * cols ] = ColorMatrix.smart_color( color )
   end
-  alias :L :colour
   
   # returns element(X,Y) in the array
   def get(x,y)
@@ -44,7 +42,6 @@ class ColorMatrix < Array
   def terminate()
     'TODO'
   end
-  alias :X :terminate
   
   def validate
     # mockup
@@ -54,18 +51,36 @@ class ColorMatrix < Array
   def valid?
     validate rescue false
   end
+
+	def	draw_vertical(x,y1,y2,color)
+		:TODO
+	end
+	def	draw_horizontal(x1,x2,y,color)
+		:TODO
+	end
+
+	def fill(x,y,color)
+
+	end
   
   def see
     deb "[SEE] This matrix has the following elements:\n"
     puts self.to_s
   end
-  alias :S :see
   
   # Takes array and splits into chunks of X size
   def to_s() #(opts={})
     super.to_s.scan(/.{#{cols}}/).join("\n")
   end
   
+  alias :F :fill
+	alias :H :draw_horizontal
+  alias :S :see
+	alias :V :draw_vertical
+  alias :X :terminate
+  alias :L :colour
+  alias :I :initialize
+
 public
 
   def self.I(x,y)
