@@ -36,7 +36,6 @@ class ColorMatrix < Array
   # which is (x-1)+(y-1)*NUM_COLUMNS in streteched array notation
 	# SETS COLOUR
   def set_colour(x,y,color)
-		#deb "set(#{x},#{y},'#{color}')"
     self[(x-1) + (y-1) * cols ] = ColorMatrix.smart_color( color )
   end
  
@@ -84,7 +83,6 @@ class ColorMatrix < Array
   This is known in literature as "Connected component labeling" or "4/8-connectivity labelling". More simply, in this case, I can achieve that with Flood-Filling
 
 =end
-  
 
 	def flood_fill(pixel, new_colour)
     current_colour = self[pixel.x, pixel.y]
@@ -132,12 +130,28 @@ class ColorMatrix < Array
 		draw_horizontal(west.x,east.x,west.y,color)
 	end
 
+	# taken from Ruby Forum, topic 184567
+	def fill2(x, y, target_color, replacement_color)
+      return unless x>0 && y>0 && x<=cols && y<=rows # valid point?
+
+      return if get(x,y) != target_color
+      return if get(x,y) == replacement_color
+      
+      set y,x,replacement_color
+      fill2(x+1, y, target_color, replacement_color)
+      fill2(x-1, y, target_color, replacement_color)
+      fill2(x, y+1, target_color, replacement_color)
+      fill2(x, y-1, target_color, replacement_color)  
+  end
+
+
   def fill(x,y,color)
     deb "fill(#{x},#{y},#{color})"
 		#assert(x>=0 && x<cols, "x must be within 0..cols")
     deb "Original matrix: \n#{self}"
 		pixel = Pixel.new(x,y)
 		flood_fill(pixel,color)
+		#fill2(x,y,get(x,y),color)
   end
 
 	# set all pixels to white
@@ -187,7 +201,7 @@ public
   end
 
 =begin
- CLASS methods !!!
+ CLASS methods
 =end 
 private
   # gives the color by string itself or by hash table if its a symbol
