@@ -1,5 +1,4 @@
 
-
 Graphical editors allow users to edit images in the same way text editors let us modify documents. Images are represented as an M x N array of pixels with each pixel given colour.
 Produce a program that simulates a simple interactive graphical editor.
 
@@ -49,3 +48,15 @@ OOOOO
  JWJJJ
  JJJJJ
  JJJJJ
+
+= Install
+
+run the following:
+
+ ruby main.rb
+
+Note. The library is not imported correctly so you might need to adapt the path
+= Bibliography =
+
+* http://en.wikipedia.org/wiki/Connected-component_labeling
+* 
