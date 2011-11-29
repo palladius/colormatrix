@@ -8,23 +8,22 @@
 
 require 'matrix' # from stdlib
 
-class ColorMatrix < Matrix
+class ColorMatrix < Array
   @@version  = "0.2" 
   @@colors = {
     :white  => 'O',
   }
   #attr_accessor :x, :y
   
-  def initialize(x,y, base_colour = :white )
+  def initialize(x, y, base_colour = :white )
+    Array.new(x*y, ColorMatrix.smart_color(base_colour))
     puts "Matrix initialize(#{x},#{y}) with color: #{base_colour}"
-    tmp = ColorMatrix #.new# (x,y)
+    #tmp = ColorMatrix #.new# (x,y)
     # once for every X
-    first_row = Array.new(y, ColorMatrix.smart_color(base_colour))
-    m = ColorMatrix[ [first_row,first_row] ]
+    #first_row = Array.new(y, ColorMatrix.smart_color(base_colour))
     p "DEB self.class = #{self.class}"
-    m
+    #m
   end
-  alias :I :initialize
   
   def colour(x,y,color)
     puts "DEB colour"
@@ -55,6 +54,16 @@ class ColorMatrix < Matrix
     ":TODO"
   end
   
+  
+public
+
+  def self.INIT(x,y)
+    m = ColorMatrix
+    m.new(x,y)
+    m
+  end
+
+
   
 =begin
  CLASS methods !!!
