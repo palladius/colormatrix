@@ -108,24 +108,30 @@ class ColorMatrix < Array
       (1..cols).each do |y|
         deb "P(#{x};#{y}) "
         if data.get(x,y) != :background
-	  neighbour_labels = neighbours_colors_of(x,y)
-	  if neighbour_labels.size == 0 
-	    deb "empty neighbours!"
-	    linked[next_label] = true
-	    labels.set(x,y,next_label) 
-	    next_label = next_label + 1       
-	  else # not empty
-	    # find the smallest label
-	    labels.set(x,y,neighbour_labels.min)
-	    for label in neighbour_labels do
-	      linked[label] = union(linked[label],neighbour_labels)
-	    end
-	  end
-	end
+					neighbour_labels = labels.neighbours_colors_of(x,y)
+					#neighbours = labels.neighbours_of(x,y)
+					if neighbour_labels.size == 0 
+						deb "empty neighbours!"
+						linked[next_label] ||= []
+						linked[next_label] << next_label
+						labels.set(x,y,next_label) 
+						next_label = next_label + 1       
+					else # not empty
+						# find the smallest label
+						labels.set(x,y,neighbour_labels.min)
+						deb neighbour_labels 
+						deb neighbour_labels.class 
+						for label in neighbour_labels do
+							#deb label
+							#p "union(#{ linked[label]},#{neighbour_labels})"
+							linked[label] = linked[label] | neighbour_labels # union
+						end
+					end
+				end
       end
     end
-    
-    
+		labels.print
+		# Second pass todo
   end
 
   def fill(x,y,color)
@@ -152,7 +158,7 @@ class ColorMatrix < Array
     
   end
   
-  def see
+  def print
     deb "[SEE] This matrix has the following elements:\n"
     puts self.to_s
   end
@@ -164,7 +170,7 @@ class ColorMatrix < Array
   
   alias :F :fill
 	alias :H :draw_horizontal
-  alias :S :see
+  alias :S :print
 	alias :V :draw_vertical
   alias :X :terminate
   alias :L :set_colour
