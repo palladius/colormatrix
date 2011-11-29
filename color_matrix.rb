@@ -6,14 +6,14 @@
 
 =end
 
-require 'matrix' # from stdlib
+require 'set' # from stdlib
 
 class ColorMatrix < Array
   @@version  = "0.2" 
   @@colors = {
     :white  => 'O',
     :nil    => '.', # for labelling, private value
-    :background  => ',', # for labelling, private value
+    :background  => '0' , # for labelling, private value
   }
 	@@debug = false
   attr_accessor :cols, :rows
@@ -79,7 +79,9 @@ class ColorMatrix < Array
   end
   
   def neighbours_colors_of(x,y)
-    neighbours_of(x,y).map{|el| get(el[0],el[1]) }                    
+    ret = neighbours_of(x,y).map{|el| get(el[0],el[1]) }                    
+		deb "neighbour_colors_of = #{ret}"
+		ret
   end
 
 
@@ -95,57 +97,58 @@ class ColorMatrix < Array
 	The solution consistes on Labelling, then filling everything which has the same label as the P(x,y)
 
 	Pass 1:
-		Create a matrix of boolean initialiazed to false (or int to 0). I reuse my matrix with true (1) and false (0)
+		Create a matrix of boolean initialiazed to false (or int to 0). I reuse my matrix with true (1) and false (0).
+		Create a linked_list
 =end
   
   def twopass(data)
-    linked = []
-    labels = ColorMatrix.new(rows,cols,:background)
+    linked_list = Hash.new
+    labels = ColorMatrix.new(cols,rows,:background)
     next_label = 1  #  0 is background, we start with 1
-		deb "data: #{data}"
+		deb "twopass data:\n#{data}"
     
     # First pass
     (1..rows).each do |y|
       (1..cols).each do |x|
+	#deb "LinkedList: #{linked_list.inspect}"
         if data.get(x,y) != 0
-					neighbours = labels.neighbours_of(x,y)
-					neighbours_filtered = labels.neighbours_of(x,y).select{|el| # el is an array(x,y) 
-						#deb "EL #{el[0]},#{el[1]} vs #{x},#{y} -- #{el.inspect}"
-						#labels.get(el[0],el[1]) == labels.get(x,y)
-						labels.get(el[0],el[1]) == data.get(x,y)
-					}
-					neighbour_labels = labels.neighbours_colors_of(x,y)
-					#	Neighbours are the elements which are connected with the current elements label
-					deb "P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')} Filtered: #{neighbours_filtered}"
+	  # all neighbours
+	  neighbours = labels.neighbours_of(x,y)
+	  neighbours_filtered = labels.neighbours_of(x,y).select{|el| # el is an array(x,y) 
+	    #deb "EL #{el[0]},#{el[1]} vs #{x},#{y} -- #{el.inspect}"
+	    #labels.get(el[0],el[1]) == labels.get(x,y)
+	    data.get(el[0],el[1]) == data.get(x,y)
+	  }
+	  neighbour_labels = labels.neighbours_colors_of(x,y)
+	  #	Neighbours are the elements which are connected with the current elements label
+	  deb "P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')} Filtered: #{neighbours_filtered}"
 
-					# If neighbours are empty
-					if neighbours == []
-						deb "empty neighbours! next_label = #{next_label}"
-						#linked[next_label] ||= []
-						deb "Linked[next_label] before = #{linked[next_label]}" #  << next_label
-						linked[next_label] |= next_label
-						deb "Linked[next_label] after  = #{linked[next_label]}" #  << next_label
-						labels.set(x,y,next_label) 
-						next_label = next_label + 1       
-
-					else # not empty
-						
-						# find the smallest label
-						deb "Not empty! P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')}"
-						labels.set(x,y,neighbour_labels.min)
-						#deb neighbour_labels 
-						#deb neighbour_labels.class 
-						for label in neighbour_labels do
-							#deb label
-							#deb "union(#{ linked[label]},#{neighbour_labels})"
-							linked[label] |= neighbour_labels
-							#neighbour_labels.each do |mylabel| # union
-							#	linked[label] |= mylabels # union
-							#end
-							deb "Linked now is: #{linked.inspect}"
-						end
-					end
-				end
+	  # If neighbours are empty
+	  if neighbours == []
+	    deb "empty neighbours! next_label = #{next_label}"
+	     #deb "Linked[next_label] before = #{linked_list[next_label]}" #  << next_label
+	    #linked_list[next_label] ||= []
+	    #assert(linked_list.class == Hash, "LinkedList3 must be an Hash: #{linked_list.inspect}")
+	    #assert(next_label.class == Fixnum, "should be a number")
+	    #linked_list[next_label] << next_label if next_label
+	    #deb "Linked[next_label] after  = #{linked_list[next_label]}" #  << next_label
+	    labels.set(x,y,next_label) 
+	    #assert(linked_list.class == Hash, "LinkedList1 must be an Hash")
+	    #assert(linked_list[next_label].class == Array, "LinkedList[nl] must be an Array: #{linked_list[next_label].inspect}")
+	    #(linked_list[next_label]).uniq! # removes from Hash multuiple elements, like a Set
+	    #assert(linked_list.class == Hash, "LinkedList2 must be an Hash")
+	    next_label = next_label + 1
+	  else # not empty			
+	    # find the smallest label
+	    deb "Not empty! P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')}"
+	    labels.set(x,y,neighbour_labels.min)
+	    for label in neighbour_labels do
+	      #linked_list[label] ||= []
+	      # linked_list[label] << neighbour_labels
+	    end
+	  #deb "Linked now is: #{linked_list.inspect}"
+	  end
+	end
       end
     end
 		
@@ -165,16 +168,38 @@ class ColorMatrix < Array
 		return labels
   end
 
+	def	onepass(image)
+		# matrix with labels
+		mlabels = ColorMatrix.new(image.cols,image.rows,0)
+    linked_list = Hash.new
+    (1..rows).each do |y|
+      (1..cols).each do |x|
+					neighbours = mlabels.neighbours_of(x,y)
+			end
+		end
+		deb mlabels
+		mlabels
+	end
+
+	def	dimensions
+		[cols,rows]
+	end
+
 	def _find(s)
+		#deb "_find(#{s})"
 		s.to_i
 	end
 
   def fill(x,y,color)
+    deb "fill(x,y,color)"
+		assert(x>=0 && x<cols, "x must be within 0..cols")
     deb "Original matrix: \n#{self}"
-    m2 = twopass(self)
+    m2 = twopass(self) # applies the two-pass algorithm
+    #m2 = onepass(self) # applies the two-pass algorithm
+		m2.print "After onepass" if ColorMatrix.deb?
 		label_xy = m2.get(x,y)
+
 		deb "Label from my point: #{label_xy}"
-    #set(x,y,color)
     (1..rows).each do |x1|
       (1..cols).each do |y1|
 				set(x1,y1,color) if m2.get(x1,y1) == label_xy
@@ -241,5 +266,11 @@ private
     return @@colors[x] if x.class == Symbol
     x
   end
+
+	def assert(assertion, description)
+    return if assertion
+		puts "ASSERT ERROR: #{description}"
+		exit 1
+	end
 
 end #/ColorMatrix class
