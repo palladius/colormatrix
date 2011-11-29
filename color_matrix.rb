@@ -65,24 +65,21 @@ class ColorMatrix < Array
   
   # 4-connectivity neighbours are: N and W
   # 8-connectivity neihbours are: W, NW, N, NE
-  def neighbours_of(x,y)
-    neighbours = []
-    neighbours << [x-1,y] unless x<2 # west unless boundary
-    neighbours << [x,y-1] unless y<2 # north unless boundary
-    neighbours
+  def neighbours_of(x1,y1)
+    myneighbours = [ ]
+    #myneighbours = [ [-5, -6] ]
+    myneighbours << [(x1-1),(y1)] # unless x<2 # west unless boundary
+    myneighbours << [(x1),(y1-1)] # unless y<2 # north unless boundary
+    #neighbours << [x+1,y] unless x >= cols # east unless boundary
+    #neighbours << [x,y+1] unless y >= rows # south unless boundary
+		deb "Neighbours of (#{x1},#{y1}): #{myneighbours.inspect}"
+    myneighbours
   end
   
   def neighbours_colors_of(x,y)
     neighbours_of(x,y).map{|el| get(el[0],el[1]) }                    
   end
 
-  def west?(x,y)
-    x > 1
-  end
-  def west(x,y)
-    [x-1,y] if west?
-  end
-  
 
 =begin
 	Fill the region R with the colour C. 
@@ -98,24 +95,29 @@ class ColorMatrix < Array
 	Pass 1:
 		Create a matrix of boolean initialiazed to false (or int to 0). I reuse my matrix with true (1) and false (0)
 =end
-  
+ 
   
   def twopass(data)
     linked = []
     labels = ColorMatrix.new(rows,cols,0)
     next_label = 0  #  0 is background, we start with 1
+		deb "data: #{data}"
     
     # First pass
-    (1..rows).each do |x|
-      (1..cols).each do |y|
+    (1..rows).each do |y|
+      (1..cols).each do |x|
         #deb "P(#{x};#{y}) "
-        if data.get(x,y) != :background
-					#neighbour_labels = labels.neighbours_colors_of(x,y)
-					#	Neighbours are the elements which are connected with the current elements label
-					neighbours = labels.neighbours_of(x,y).select{|el|  
-						labels.get(el[0],el[1]) == labels.get(x,y)
+        if data.get(x,y) != 0
+					neighbours = labels.neighbours_of(x,y)
+					neighbours_filtered = labels.neighbours_of(x,y).select{|el| # el is an array(x,y) 
+						deb "Andrea EL #{el[0]},#{el[1]} vs #{x},#{y} -- #{el.inspect}"
+						#labels.get(el[0],el[1]) == labels.get(x,y)
+						labels.get(el[0],el[1]) == data.get(x,y)
 					}
-					if neighbours == []
+					neighbour_labels = labels.neighbours_colors_of(x,y)
+					#	Neighbours are the elements which are connected with the current elements label
+					deb "P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')}"
+					if neighbours_filtered == []
 						#deb "empty neighbours!"
 						linked[next_label] ||= []
 						linked[next_label] << next_label
@@ -123,7 +125,7 @@ class ColorMatrix < Array
 						next_label = next_label + 1       
 					else # not empty
 						# find the smallest label
-						deb "Not empty! P=(#{x},#{y}) Labels => #{neighbours.inspect}"
+						#deb "Not empty! P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')}"
 						labels.set(x,y,neighbour_labels.min)
 						#deb neighbour_labels 
 						#deb neighbour_labels.class 
@@ -131,6 +133,7 @@ class ColorMatrix < Array
 							#deb label
 							#p "union(#{ linked[label]},#{neighbour_labels})"
 							linked[label] = linked[label] | neighbour_labels # union
+							#deb "Linked now is: #{linked.inspect}"
 						end
 					end
 				end
@@ -141,8 +144,8 @@ class ColorMatrix < Array
 		labels.print "First labelling pass"
 
 		# Second pass todo
-    (1..rows).each do |x|
-      (1..cols).each do |y|
+    (1..rows).each do |y|
+      (1..cols).each do |x|
         if data[x][y] != 0
 					labels.set(x,y, _find(labels[x][y]) )
 				end

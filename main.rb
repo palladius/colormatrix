@@ -12,7 +12,7 @@ require '~/git/colormatrix/color_matrix.rb'
 
 def main
   matrix = ColorMatrix.new(5,6)
-  matrix.L( 2,3,'A')
+  matrix.L(2,3,'A')
   matrix.F(3,3,'J')
   matrix.V(2,3,4,'W') 
   matrix.H(3,4,2,'Z')
