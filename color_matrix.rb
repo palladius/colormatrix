@@ -25,9 +25,9 @@ class ColorMatrix < Array
     deb "Matrix initialize(#{rows}x#{cols}) with color: #{base_colour}"
   end
 
-	def	deb(str)
-		puts "DEB| #{str}" if @@debug
-	end
+  def	deb(str)
+    puts "DEB| #{str}" if @@debug
+  end
   
   # P(x,y) in human/math notation corresponds to
   # x-1 for X and y'1 for Y in matrix notation.
@@ -66,15 +66,15 @@ class ColorMatrix < Array
   end
   
   # 4-connectivity neighbours are: N and W
-  # 8-connectivity neighbours are: W, NW, N, NE
+  # 8-connectivity neighbours are: W, NW, N, NE   (diagonal_also)
   def neighbours_of(x,y, diagonal_also = false)
     myneighbours = [ ]
     myneighbours << [x-1,y] unless x<2 # west unless boundary
     myneighbours << [x,y-1] unless y<2 # north unless boundary
-		if diagonal_also
-			neighbours << [x+1,y] unless x >= cols # east unless boundary
-			neighbours << [x,y+1] unless y >= rows # south unless boundary
-		end
+    if diagonal_also # 8-conntected
+      neighbours << [x+1,y] unless x >= cols # east unless boundary
+      neighbours << [x,y+1] unless y >= rows # south unless boundary
+    end
     myneighbours
   end
   
@@ -105,7 +105,7 @@ class ColorMatrix < Array
     linked_list = Hash.new
     labels = ColorMatrix.new(cols,rows,:background)
     next_label = 1  #  0 is background, we start with 1
-		deb "twopass data:\n#{data}"
+    deb "twopass data:\n#{data}"
     
     # First pass
     (1..rows).each do |y|
@@ -127,7 +127,7 @@ class ColorMatrix < Array
 	  if neighbours == []
 	    deb "empty neighbours! next_label = #{next_label}"
 	     #deb "Linked[next_label] before = #{linked_list[next_label]}" #  << next_label
-	    #linked_list[next_label] ||= []
+	    linked_list[next_label] ||= []
 	    #assert(linked_list.class == Hash, "LinkedList3 must be an Hash: #{linked_list.inspect}")
 	    #assert(next_label.class == Fixnum, "should be a number")
 	    #linked_list[next_label] << next_label if next_label
@@ -152,43 +152,25 @@ class ColorMatrix < Array
       end
     end
 		
-		# debug print intermedium
-		labels.print "First labelling pass" if ColorMatrix.deb?
+    # debug print intermedium
+    labels.print "First labelling pass" if ColorMatrix.deb?
 
-		# Second pass todo
+    # Second pass todo
     (1..rows).each do |y|
       (1..cols).each do |x|
         if data[x][y] != 0
-					labels.set(x,y, _find(labels[x][y]) )
-				end
-			end
-		end
-		labels.print "after second pass" if ColorMatrix.deb?
-	
-		return labels
+	  labels.set(x,y, _find(labels[x][y]) )
+	end
+      end
+    end
+    labels.print "after second pass" if ColorMatrix.deb?
+
+    return labels
   end
 
-	def	onepass(image)
-		# matrix with labels
-		mlabels = ColorMatrix.new(image.cols,image.rows,0)
-    linked_list = Hash.new
-    (1..rows).each do |y|
-      (1..cols).each do |x|
-					neighbours = mlabels.neighbours_of(x,y)
-			end
-		end
-		deb mlabels
-		mlabels
-	end
-
-	def	dimensions
-		[cols,rows]
-	end
-
-	def _find(s)
-		#deb "_find(#{s})"
-		s.to_i
-	end
+  def _find(s)
+    s.to_i
+  end
 
   def fill(x,y,color)
     deb "fill(x,y,color)"
@@ -196,15 +178,15 @@ class ColorMatrix < Array
     deb "Original matrix: \n#{self}"
     m2 = twopass(self) # applies the two-pass algorithm
     #m2 = onepass(self) # applies the two-pass algorithm
-		m2.print "After onepass" if ColorMatrix.deb?
-		label_xy = m2.get(x,y)
+    label_xy = m2.get(x,y)
 
-		deb "Label from my point: #{label_xy}"
+    deb "Label from my point: #{label_xy}"
+    
     (1..rows).each do |x1|
       (1..cols).each do |y1|
-				set(x1,y1,color) if m2.get(x1,y1) == label_xy
-			end
-		end
+	set(x1,y1,color) if m2.get(x1,y1) == label_xy
+      end
+    end
 
     # First I create a labelling matrix m2
     #m2 = ColorMatrix.new(self.rows,self.cols,:nil)
@@ -213,12 +195,13 @@ class ColorMatrix < Array
   end
 
 	# set all pixels to white
-	def clear()
+  def clear()
     (1..rows).each do |x|
       (1..cols).each do |y|
-			end
-		end
-	end
+	set(x,y,:white)
+      end
+    end
+  end
   
   def print(description = "This matrix has the following elements")
     deb "[PRINT] #{description}:\n"
@@ -231,9 +214,9 @@ class ColorMatrix < Array
   end
   
   alias :F :fill
-	alias :H :draw_horizontal
+  alias :H :draw_horizontal
   alias :S :print
-	alias :V :draw_vertical
+  alias :V :draw_vertical
   alias :X :terminate
   alias :L :set_colour
   alias :I :initialize
@@ -243,9 +226,9 @@ class ColorMatrix < Array
 
 public
 
-	def self.set_debug(b)
-		@@debug = b
-	end
+  def self.set_debug(b)
+    @@debug = b
+  end
 
   def self.I(x,y)
     m = ColorMatrix
@@ -253,9 +236,9 @@ public
     m
   end
 
-	def self.deb?
-		@@debug
-	end
+  def self.deb?
+    @@debug
+  end
 
 =begin
  CLASS methods !!!
@@ -267,10 +250,10 @@ private
     x
   end
 
-	def assert(assertion, description)
+  def assert(assertion, description)
     return if assertion
-		puts "ASSERT ERROR: #{description}"
-		exit 1
-	end
+    puts "ASSERT ERROR: #{description}"
+    exit 1
+  end
 
 end #/ColorMatrix class
