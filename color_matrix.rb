@@ -174,6 +174,14 @@ class ColorMatrix < Array
     #deb "Labelling matrix: \n#{m2}"
     
   end
+
+	# set all pixels to white
+	def clear()
+    (1..rows).each do |x|
+      (1..cols).each do |y|
+			end
+		end
+	end
   
   def print(description = "This matrix has the following elements")
     deb "[PRINT] #{description}\n"
