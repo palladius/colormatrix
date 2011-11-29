@@ -64,9 +64,12 @@ run the following:
 
 Note. The library is not imported correctly so you might need to adapt the path
 
+The algorithm implements Flood-Filling in Ruby, examples taken from Rosetta code
+
 ============
 Bibliography 
 ============
 
 * http://en.wikipedia.org/wiki/Connected-component_labeling
 * http://www.cse.msu.edu/~stockman/Book/2002/Chapters/ch3.pdf
+* Rosetta code (somewhat lacunary yet very inspiring): http://rosettacode.org/wiki/Bitmap/Flood_fill#Ruby

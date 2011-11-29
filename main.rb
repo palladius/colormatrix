@@ -10,6 +10,7 @@
 require 'color_matrix.rb'
 
 def main
+  puts "This is the main(), instruction as in README example"
   matrix = ColorMatrix.new(5,6)
   matrix.L(2,3,'A')
   matrix.F(3,3,'J')
