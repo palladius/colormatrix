@@ -13,21 +13,21 @@ class ColorMatrix < Array
   @@colors = {
     :white  => 'O',
   }
-  #attr_accessor :x, :y
+  attr_accessor :x, :y
   
   def initialize(x, y, base_colour = :white )
-    Array.new(x*y, ColorMatrix.smart_color(base_colour))
+    super(x*y, ColorMatrix.smart_color(base_colour))
+    @x = x
+    @y = y
     puts "Matrix initialize(#{x},#{y}) with color: #{base_colour}"
-    #tmp = ColorMatrix #.new# (x,y)
-    # once for every X
-    #first_row = Array.new(y, ColorMatrix.smart_color(base_colour))
     p "DEB self.class = #{self.class}"
     #m
   end
+  alias :I :initialize
   
   def colour(x,y,color)
     puts "DEB colour"
-    self[x,y] = smart_color( color )
+    self[x,y] = ColorMatrix.smart_color( color )
   end
   alias :L :colour
   
@@ -46,18 +46,22 @@ class ColorMatrix < Array
   end
   
   def see
-    puts "This matrix has the following elements:\n", self.to_s
+    puts "[SEE] This matrix has the following elements:\n"
+    puts self.to_s
   end
   alias :S :see
   
-  def to_s
-    ":TODO"
+  # Takes array and splits into chunks of X size
+  def to_s() #(opts={})
+    #str = super.to_s
+    #{}"Matrix(#{x},#{y}): \n 1. #{str}\n 2. #{ str.scan(/.{#{x}}/).join(', ') }" if opts.fetch(:verbose, false)
+    super.to_s.scan(/.{#{x}}/).join("\n")
   end
   
   
 public
 
-  def self.INIT(x,y)
+  def self.I(x,y)
     m = ColorMatrix
     m.new(x,y)
     m

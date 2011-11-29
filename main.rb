@@ -5,16 +5,16 @@ require '~/git/colormatrix/person.rb'
 
 def main
   puts 'Hello from main'
-  pers = Person.new('Riccardo')
-  p pers.to_s
-  puts '1. Creating matrix'
-  #matrix = ColorMatrix.I(5,6)
-  matrix = ColorMatrix.INIT(5,6)
-  puts "2. Colouring: #{matrix.to_s}"
-  p matrix.class
+  puts '---------------'
+  puts "\n1. Creating matrix"
+  matrix = ColorMatrix.new(5,6)
+  p "DEB class=#{matrix.class}"
+  
+  puts "\n2. Colouring: #{matrix.to_s}"
   #matrix.L( 2,3,'A' )
   matrix.colour( 2,3,'A' )
-  puts '1. Printing'
+  
+  puts "\n3. Printing"
   matrix.S()
 end
 
