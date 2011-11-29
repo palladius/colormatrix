@@ -13,15 +13,16 @@ class ColorMatrix < Array
   @@colors = {
     :white  => 'O',
     :nil    => '.', # for labelling, private value
+    :background  => ',', # for labelling, private value
   }
-	@@debug = true
+	@@debug = false
   attr_accessor :cols, :rows
   
   def initialize(x, y, base_colour = :white )
     super(x*y, ColorMatrix.smart_color(base_colour))
     @cols = x
     @rows = y
-    deb "Matrix initialize(#{x},#{y}) with color: #{base_colour}"
+    deb "Matrix initialize(#{rows}x#{cols}) with color: #{base_colour}"
   end
 
 	def	deb(str)
@@ -65,14 +66,13 @@ class ColorMatrix < Array
   
   # 4-connectivity neighbours are: N and W
   # 8-connectivity neihbours are: W, NW, N, NE
-  def neighbours_of(x1,y1)
+  def neighbours_of(x,y)
     myneighbours = [ ]
-    #myneighbours = [ [-5, -6] ]
-    myneighbours << [(x1-1),(y1)] # unless x<2 # west unless boundary
-    myneighbours << [(x1),(y1-1)] # unless y<2 # north unless boundary
+    myneighbours << [x-1,y] unless x<2 # west unless boundary
+    myneighbours << [x,y-1] unless y<2 # north unless boundary
     #neighbours << [x+1,y] unless x >= cols # east unless boundary
     #neighbours << [x,y+1] unless y >= rows # south unless boundary
-		deb "Neighbours of (#{x1},#{y1}): #{myneighbours.inspect}"
+		#deb "Neighbours of (#{x1},#{y1}): #{myneighbours.inspect}"
     myneighbours
   end
   
@@ -95,12 +95,11 @@ class ColorMatrix < Array
 	Pass 1:
 		Create a matrix of boolean initialiazed to false (or int to 0). I reuse my matrix with true (1) and false (0)
 =end
- 
   
   def twopass(data)
     linked = []
-    labels = ColorMatrix.new(rows,cols,0)
-    next_label = 0  #  0 is background, we start with 1
+    labels = ColorMatrix.new(rows,cols,:background)
+    next_label = 1  #  0 is background, we start with 1
 		deb "data: #{data}"
     
     # First pass
@@ -110,30 +109,36 @@ class ColorMatrix < Array
         if data.get(x,y) != 0
 					neighbours = labels.neighbours_of(x,y)
 					neighbours_filtered = labels.neighbours_of(x,y).select{|el| # el is an array(x,y) 
-						deb "Andrea EL #{el[0]},#{el[1]} vs #{x},#{y} -- #{el.inspect}"
+						#deb "EL #{el[0]},#{el[1]} vs #{x},#{y} -- #{el.inspect}"
 						#labels.get(el[0],el[1]) == labels.get(x,y)
 						labels.get(el[0],el[1]) == data.get(x,y)
 					}
 					neighbour_labels = labels.neighbours_colors_of(x,y)
 					#	Neighbours are the elements which are connected with the current elements label
-					deb "P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')}"
-					if neighbours_filtered == []
-						#deb "empty neighbours!"
-						linked[next_label] ||= []
-						linked[next_label] << next_label
+					deb "P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')} Filtered: #{neighbours_filtered}"
+
+					# If neighbours are empty
+					if neighbours == []
+						deb "empty neighbours! next_label = #{next_label}"
+						#linked[next_label] ||= []
+						deb "Linked[next_label] before = #{linked[next_label]}" #  << next_label
+						linked[next_label] |= next_label
+						deb "Linked[next_label] after  = #{linked[next_label]}" #  << next_label
 						labels.set(x,y,next_label) 
 						next_label = next_label + 1       
+
 					else # not empty
+						
 						# find the smallest label
-						#deb "Not empty! P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')}"
+						deb "Not empty! P=(#{x},#{y}) Neighbours => #{neighbours.inspect}; Labels: #{neighbour_labels.join(', ')}"
 						labels.set(x,y,neighbour_labels.min)
 						#deb neighbour_labels 
 						#deb neighbour_labels.class 
 						for label in neighbour_labels do
 							#deb label
-							#p "union(#{ linked[label]},#{neighbour_labels})"
+							deb "union(#{ linked[label]},#{neighbour_labels})"
 							linked[label] = linked[label] | neighbour_labels # union
-							#deb "Linked now is: #{linked.inspect}"
+							deb "Linked now is: #{linked.inspect}"
 						end
 					end
 				end
