@@ -38,12 +38,15 @@ In the example below, > denotes input, => denotes program output.
  OOOOO 
  OAOOO 
  OOOOO 
-OOOOO 
-OOOOO
+ OOOOO 
+ OOOOO
 
  >F33J 
+
  >V234W 
+
  >H342Z 
+
  >S
 
 => 
@@ -73,3 +76,4 @@ Bibliography
 * http://en.wikipedia.org/wiki/Connected-component_labeling
 * http://www.cse.msu.edu/~stockman/Book/2002/Chapters/ch3.pdf
 * Rosetta code (somewhat lacunary yet very inspiring): http://rosettacode.org/wiki/Bitmap/Flood_fill#Ruby
+* http://en.wikipedia.org/wiki/Flood_fill
