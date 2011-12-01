@@ -1,8 +1,8 @@
 Graphical editors allow users to edit images in the same way text editors let us modify documents. Images are represented as an M x N array of pixels with each pixel given colour.
 Produce a program that simulates a simple interactive graphical editor.
 
-=====
 Input
+=====
 
 The input consists of a line containing a sequence of commands. Each command is represented by a single capital letter at the start of the line. Arguments to the command are separated by spaces and follow the command character.
 Pixel co-ordinates are represented by a pair of integers: 1) a column number between 1 and M, and 2) a row number between 1 and N. Where 1 <= M, N <= 250. The origin sits in the upper-left of the table. Colours are specified by capital letters.
@@ -20,8 +20,8 @@ The editor supports 7 commands:
 6. F X Y C. Fill the region R with the colour C. R is defined as: Pixel (X,Y) belongs to R. Any other pixel which is the same colour as (X,Y) and shares a common side with any pixel in R also belongs to this region.
 7. S. Show the contents of the current image 8. X. Terminate the session
 
-=======
 Example
+=======
 
 In the example below, > denotes input, => denotes program output::
 
@@ -53,9 +53,8 @@ In the example below, > denotes input, => denotes program output::
  JJJJJ
  JJJJJ
 
-=========
 Install
-=========
+=======
 
 run the following:
 
@@ -65,7 +64,6 @@ Note. The library is not imported correctly so you might need to adapt the path
 
 The algorithm implements Flood-Filling in Ruby, examples taken from Rosetta code
 
-============
 Bibliography 
 ============
 
