@@ -1,15 +1,12 @@
-
 Graphical editors allow users to edit images in the same way text editors let us modify documents. Images are represented as an M x N array of pixels with each pixel given colour.
 Produce a program that simulates a simple interactive graphical editor.
 
 =====
 Input
-=====
 
 The input consists of a line containing a sequence of commands. Each command is represented by a single capital letter at the start of the line. Arguments to the command are separated by spaces and follow the command character.
 Pixel co-ordinates are represented by a pair of integers: 1) a column number between 1 and M, and 2) a row number between 1 and N. Where 1 <= M, N <= 250. The origin sits in the upper-left of the table. Colours are specified by capital letters.
 
-========
 Commands
 ========
 
@@ -25,9 +22,8 @@ The editor supports 7 commands:
 
 =======
 Example
-=======
 
-In the example below, > denotes input, => denotes program output.
+In the example below, > denotes input, => denotes program output::
 
  >I 5 6 
  >L 2 3 A 
